@@ -6,7 +6,7 @@
 		<pathelement location="runtime/equinox.jar"/>
 		<pathelement location="runtime/osgi.cmpn.jar"/>
 		<pathelement location="runtime/com.threerings.s3_1.0.0.beta1.jar"/>
-		<pathelement location="runtime/jcl104-over-slf4j_1.3.1.jar"/>
+		<pathelement location="runtime/slf4j-api_1.5.6.jar"/>
 	</path>
 
 	<!-- ================================= 

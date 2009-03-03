@@ -24,7 +24,7 @@ public class HelloCommand implements CommandProvider {
 	}
 	
 	public void _sayHello(CommandInterpreter ci) {
-		ci.println("Hello World!");
+		ci.println("Guten Tag!");
 	}
 
 }
