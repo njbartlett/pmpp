@@ -12,7 +12,6 @@ package name.neilbartlett.s3install;
 
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +31,7 @@ import com.threerings.s3.client.S3ObjectListing;
  * @author Neil Bartlett
  *
  */
-public class S3Scanner implements PeriodicAction {
+public class S3Scanner implements Runnable {
 	
 	private static final Log LOG = LogFactory.getLog(S3Scanner.class);
 	
@@ -41,8 +40,6 @@ public class S3Scanner implements PeriodicAction {
 	private final String bucket;
 	private final String prefix;
 	
-	private final Map<String, Bundle> managedBundles = new HashMap<String, Bundle>();
-
 	public S3Scanner(BundleContext osgi, S3Connection s3, String bucket, String prefix) {
 		this.osgi = osgi;
 		this.s3 = s3;
@@ -51,7 +48,7 @@ public class S3Scanner implements PeriodicAction {
 	}
 
 	public void run() {
-		// Read new files into map
+		// Read files into map
 		LOG.info("Scanning bucket " + bucket);
 		Map<String,S3ObjectEntry> objectEntries = new HashMap<String, S3ObjectEntry>();
 		try {
@@ -67,19 +64,26 @@ public class S3Scanner implements PeriodicAction {
 			e1.printStackTrace();
 			return;
 		}
+		
+		// Calculate which bundles are managed by this scanner instance
+		String uriPrefix = getBucketURIPrefix(bucket) + prefix;
+		Bundle[] bundles = osgi.getBundles();
+		Map<String,Bundle> bundleMap = new HashMap<String, Bundle>();
+		for (Bundle bundle : bundles) {
+			if(bundle.getLocation().startsWith(uriPrefix)) {
+				bundleMap.put(bundle.getLocation(), bundle);
+			}
+		}
 
 		// Remove and update bundles
-		for(Iterator<String> iter = managedBundles.keySet().iterator(); iter.hasNext(); ) {
-			String location = iter.next();
-			
-			Bundle bundle = managedBundles.get(location);
+		for(String location : bundleMap.keySet()) {
+			Bundle bundle = bundleMap.get(location);
 			S3ObjectEntry entry = objectEntries.get(location);
 			
 			if(entry == null) {
 				// Remove bundle
-				LOG.info("UNINSTALLING BUNDLE: " + location);
-				iter.remove();
 				try {
+					LOG.info("UNINSTALLING BUNDLE: " + location);
 					bundle.uninstall();
 				} catch (BundleException e) {
 					LOG.error("Error uninstalling bundle", e);
@@ -101,33 +105,19 @@ public class S3Scanner implements PeriodicAction {
 		
 		// Add missing bundles
 		for(String location : objectEntries.keySet()) {
-			if(!managedBundles.containsKey(location)) {
+			if(!bundleMap.containsKey(location)) {
 				LOG.info("INSTALLING BUNDLE: " + location);
 				S3ObjectEntry entry = objectEntries.get(location);
 				try {
 					S3Object object = s3.getObject(bucket, entry.getKey());
 					Bundle bundle = osgi.installBundle(location, object.getInputStream());
 					LOG.info("Bundle ID is " + bundle.getBundleId());
-					managedBundles.put(location, bundle);
 					bundle.start();
 				} catch (S3Exception e) {
 					LOG.error("Error reading bundle for install", e);
 				} catch (BundleException e) {
 					LOG.error("Error installing/starting bundle", e);
 				}
-			}
-		}
-	}
-
-	public void shutdown() {
-		for (String location : managedBundles.keySet()) {
-			Bundle bundle = managedBundles.get(location);
-			
-			try {
-				LOG.info("UNINSTALLING BUNDLE: " + location);
-				bundle.uninstall();
-			} catch (BundleException e) {
-				LOG.error("Error uninstalling bundle", e);
 			}
 		}
 	}
@@ -141,8 +131,12 @@ public class S3Scanner implements PeriodicAction {
 			S3ObjectListing listing) {
 		List<S3ObjectEntry> entries = listing.getEntries();
 		for (S3ObjectEntry entry : entries) {
-			objectEntries.put("s3:" + bucket + "/" + entry.getKey(), entry);
+			objectEntries.put(getBucketURIPrefix(bucket) + entry.getKey(), entry);
 		}
+	}
+	
+	private static String getBucketURIPrefix(String bucket) {
+		return "s3:" + bucket + "/";
 	}
 	
 }

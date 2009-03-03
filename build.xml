@@ -1,5 +1,7 @@
 <project name="S3Install" default="bundles">
 	
+	<property name="bundles.dir" value="bundles"/>
+	
 	<path id="libs">
 		<pathelement location="runtime/equinox.jar"/>
 		<pathelement location="runtime/osgi.cmpn.jar"/>
@@ -21,16 +23,16 @@
     <target name="bundles" depends="compile" description="Build OSGi Bundles">
         <taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="bnd-0.0.255.jar"/>
     	<pathconvert property="bndfiles" pathsep="," dirsep="/">
-    		<fileset dir="load" includes="*.bnd"/>
+    		<fileset dir="${bundles.dir}" includes="*.bnd"/>
     	</pathconvert>
-    	<bnd classpath="classes" failok="false" files="${bndfiles}" output="load"/>
+    	<bnd classpath="classes" failok="false" files="${bndfiles}" output="${bundles.dir}"/>
     </target>
 	
 	<!-- ================================= 
           target: clean              
          ================================= -->
     <target name="clean" depends="" description="Clean Outputs">
-        <delete dir="load" includes="*.jar"/>
+        <delete dir="${bundles.dir}" includes="*.jar"/>
     	<delete dir="classes"/>
     </target>
 

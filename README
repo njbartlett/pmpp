@@ -11,7 +11,6 @@ Modelled on "FileInstall" by Peter Kriens, S3Install manages the bundles install
 1. If you drop a new bundle JAR into a bucket, then all instances of S3Install monitoring that bucket will install and start that bundle.
 2. If you drop an update to an existing bundle JAR into a bucket, then all instances of S3Install monitoring that bucket will update to the new version of the bundle
 3. If you remove a bundle JAR from a bucket, then all instances of S3Install monitoring that bucket that previous installed the bundle will uninstall it.
-4. When S3Install is stopped, it will also uninstall any bundles that it has installed.
 
 S3Install is intended for deploying bundles to one or more Amazon EC2 nodes. Each node should be setup with an OSGi framework and the S3Install bundle.
 
