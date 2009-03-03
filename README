@@ -6,15 +6,16 @@ This is (or will be) a set of simple runtime components for provisioning an OSGi
 S3Install
 =========
 
-Modelled on FileInstall by Peter Kriens, S3Install manages the bundles installed in an OSGi runtime by continuously scanning a "bucket" on Amazon S3. The effect of this is as follows:
+Modelled on "FileInstall" by Peter Kriens, S3Install manages the bundles installed in an OSGi runtime by continuously scanning a "bucket" on Amazon S3. The effect of this is as follows:
 
-1) If you drop a new bundle JAR into a bucket, then all instances of S3Install monitoring that bucket will install and start that bundle.
+1. If you drop a new bundle JAR into a bucket, then all instances of S3Install monitoring that bucket will install and start that bundle.
+2. If you drop an update to an existing bundle JAR into a bucket, then all instances of S3Install monitoring that bucket will update to the new version of the bundle
+3. If you remove a bundle JAR from a bucket, then all instances of S3Install monitoring that bucket that previous installed the bundle will uninstall it.
+4. When S3Install is stopped, it will also uninstall any bundles that it has installed.
 
-2) If you drop an update to an existing bundle JAR into a bucket, then all instances of S3Install monitoring that bucket will update to the new version of the bundle
+S3Install is intended for deploying bundles to one or more Amazon EC2 nodes. Each node should be setup with an OSGi framework and the S3Install bundle.
 
-3) If you remove a bundle JAR from a bucket, then all instances of S3Install monitoring that bucket that previous installed the bundle will uninstall it.
-
-When S3Install is stopped, it will also uninstall any bundles that it has installed.
+IMPORTANT NOTE: S3Install works by polling the contents of an S3 bucket. IF YOU RUN THIS OUTSIDE AMAZON EC2 IT WILL COST YOU MONEY (albeit a very small amount). Running within EC2 will not incur data transfer charges, as transfers between EC2 and S3 are free, but of course the rental of the EC2 node itself will cost money.
 
 Building S3Install
 ------------------
@@ -32,9 +33,7 @@ You need to use your own Amazon Web Services ID and key. Edit the file `s3instal
 	Bundle id is 9
 	
 	osgi> start 9
-	03-Mar-2009 00:59:22 name.neilbartlett.s3install.S3Scanner run
 	INFO: Scanning bucket neilbartlett.name
-	03-Mar-2009 00:59:33 name.neilbartlett.s3install.S3Scanner run
 	INFO: Scanning bucket neilbartlett.name
 	...
 
