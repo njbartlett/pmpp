@@ -1,0 +1,2 @@
+Bundle-Activator=name.neilbartlett.s3install.Activator
+Private-Package=name.neilbartlett.s3install

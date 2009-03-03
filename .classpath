@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="runtime/equinox.jar" sourcepath="sources/equinox.source.jar"/>
+	<classpathentry kind="lib" path="runtime/osgi.cmpn.jar"/>
+	<classpathentry kind="lib" path="runtime/com.threerings.s3_1.0.0.beta1.jar"/>
+	<classpathentry kind="lib" path="runtime/jcl104-over-slf4j_1.3.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

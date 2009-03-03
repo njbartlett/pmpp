@@ -1,0 +1,64 @@
+Poor Man's Provisioning Platform
+================================
+
+This is (or will be) a set of simple runtime components for provisioning an OSGi node. The first (and so far only) component included is S3Install.
+
+S3Install
+=========
+
+Modelled on FileInstall by Peter Kriens, S3Install manages the bundles installed in an OSGi runtime by continuously scanning a "bucket" on Amazon S3. The effect of this is as follows:
+
+1) If you drop a new bundle JAR into a bucket, then all instances of S3Install monitoring that bucket will install and start that bundle.
+
+2) If you drop an update to an existing bundle JAR into a bucket, then all instances of S3Install monitoring that bucket will update to the new version of the bundle
+
+3) If you remove a bundle JAR from a bucket, then all instances of S3Install monitoring that bucket that previous installed the bundle will uninstall it.
+
+When S3Install is stopped, it will also uninstall any bundles that it has installed.
+
+Building S3Install
+------------------
+
+	ant clean bundles
+
+Trying out S3Install
+--------------------
+
+You need to use your own Amazon Web Services ID and key. Edit the file `s3install.properties` to specify the ID, key and a bucket name. After this you can run Equinox and install S3Install as follows:
+
+	java -jar runtime/equinox.jar -console
+	
+	osgi> install file:load/s3install.jar
+	Bundle id is 9
+	
+	osgi> start 9
+	03-Mar-2009 00:59:22 name.neilbartlett.s3install.S3Scanner run
+	INFO: Scanning bucket neilbartlett.name
+	03-Mar-2009 00:59:33 name.neilbartlett.s3install.S3Scanner run
+	INFO: Scanning bucket neilbartlett.name
+	...
+
+Now you can try deploying a bundle to S3. A sample bundle was built by the ANT build, you can find it in `load/bundle-sample.jar`. Copy this into your S3 bucket using your favourite S3 client and you should soon see the bundle installed into your OSGi framework:
+
+	INFO: INSTALLING BUNDLE: s3:neilbartlett.name/bundle-sample.jar
+	INFO: Bundle ID is 10
+
+The sample bundle provides a console command that we can test from the OSGi console:
+
+	osgi> sayHello
+	Hello World!
+
+Try updating the class `HelloCommand` to change the message that is printed. Then rebuild the sample bundle and redeploy it to S3. We should see a message from S3Install; after this we can test whether the message has changed:
+
+	INFO: UPDATING BUNDLE: s3:neilbartlett.name/bundle-sample.jar
+	
+	osgi> sayHello
+	Guten Tag!
+
+
+Alternate Configuration File
+----------------------------
+
+By default, S3Install reads its configuration properties from a file `s3install.properties` in the current directory. You can change this by specifying the `s3config` system property when launching Equinox:
+
+	java -Ds3config=alt.s3.properties -jar runtime/equinox.jar -console

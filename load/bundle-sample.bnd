@@ -1,0 +1,2 @@
+Bundle-Activator=name.neilbartlett.sample.Activator
+Private-Package=name.neilbartlett.sample
